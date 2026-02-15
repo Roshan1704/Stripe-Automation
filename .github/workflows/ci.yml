@@ -1,0 +1,52 @@
+name: Stripe Automation CI
+
+on:
+  push:
+    branches: ["main", "master", "**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_DASHBOARD_EMAIL: ${{ secrets.STRIPE_DASHBOARD_EMAIL }}
+      STRIPE_DASHBOARD_PASSWORD: ${{ secrets.STRIPE_DASHBOARD_PASSWORD }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Validate source-set boundaries
+        run: |
+          forbidden=$(git ls-files 'src/main/java/com/stripe/automation/listeners/*.java' || true)
+          if [ -n "$forbidden" ]; then
+            echo "ERROR: Test listeners must not be under src/main/java. Move them to src/test/java."
+            echo "$forbidden"
+            exit 1
+          fi
+      - name: Build
+        run: mvn -B -DskipTests clean compile
+      - name: Start webhook server
+        run: nohup mvn -q -DskipTests exec:java -Dexec.mainClass="com.stripe.automation.webhook.WebhookReceiverServer" &
+      - name: Run API and Webhook tests
+        run: mvn -B -Dtest=StripeApiTests,WebhookValidationTests test
+      - name: Run UI tests in headless mode
+        run: mvn -B -Dheadless=true -Dtest=CucumberUiTestRunner test
+      - name: Generate Allure report
+        if: always()
+        run: mvn -B allure:report
+      - name: Upload Allure and logs artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-and-logs
+          path: |
+            target/allure-results
+            target/site/allure-maven-plugin
+            target/screenshots
+            target/surefire-reports

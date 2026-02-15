@@ -1,0 +1,4 @@
+[
+  {"amount":"1000","currency":"usd","paymentMethod":"pm_card_visa"},
+  {"amount":"2500","currency":"usd","paymentMethod":"pm_card_chargeDeclined"}
+]
