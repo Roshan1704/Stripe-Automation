@@ -90,6 +90,20 @@ stripe-automation-framework/
 - `testdata/`: Input datasets for data-driven testing.
 - `schemas/`: JSON schemas for response validation.
 
+## Eclipse / STS Import (Fix for Maven nesting error)
+If Eclipse shows errors like:
+- `Cannot nest .../src/main/resources inside .../src`
+
+the project was previously imported as a plain Java project. Use Maven import instead:
+
+1. Delete old Eclipse metadata (`.project`, `.classpath`, `.settings`) if present.
+2. In Eclipse: **File → Import → Maven → Existing Maven Projects**.
+3. Select repository root (the folder containing `pom.xml`) and finish import.
+4. Run **Right click project → Maven → Update Project**.
+5. Ensure Project SDK/JRE is Java 17.
+
+This repository no longer tracks legacy Eclipse Java-project metadata, so m2e can generate the correct Maven source folders (`src/main/java`, `src/test/java`, `src/main/resources`, `src/test/resources`).
+
 ## Setup
 1. Java 17+, Maven 3.9+
 2. Export secrets:
