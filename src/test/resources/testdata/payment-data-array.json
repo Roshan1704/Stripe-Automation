@@ -1,0 +1,10 @@
+[
+  {
+    "currency": "usd",
+    "paymentMethod": "pm_card_visa"
+  },
+  {
+    "currency": "eur",
+    "paymentMethod": "pm_card_mastercard"
+  }
+]

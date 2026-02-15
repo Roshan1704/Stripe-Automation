@@ -1,0 +1,10 @@
+.git
+.github
+.idea
+.vscode
+target
+allure-report
+allure-results
+bin
+*.iml
+.DS_Store
