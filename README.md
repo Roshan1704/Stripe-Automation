@@ -90,6 +90,20 @@ stripe-automation-framework/
 - `testdata/`: Input datasets for data-driven testing.
 - `schemas/`: JSON schemas for response validation.
 
+## Eclipse / STS Import (Fix for Maven nesting error)
+If Eclipse shows errors like:
+- `Cannot nest .../src/main/resources inside .../src`
+
+the project was previously imported as a plain Java project. Use Maven import instead:
+
+1. Delete old Eclipse metadata (`.project`, `.classpath`, `.settings`) if present.
+2. In Eclipse: **File → Import → Maven → Existing Maven Projects**.
+3. Select repository root (the folder containing `pom.xml`) and finish import.
+4. Run **Right click project → Maven → Update Project**.
+5. Ensure Project SDK/JRE is Java 17.
+
+This repository no longer tracks legacy Eclipse Java-project metadata, so m2e can generate the correct Maven source folders (`src/main/java`, `src/test/java`, `src/main/resources`, `src/test/resources`).
+
 ## Setup
 1. Java 17+, Maven 3.9+
 2. Export secrets:
@@ -113,6 +127,34 @@ stripe listen --forward-to localhost:9090/stripe/webhook
 stripe trigger payment_intent.succeeded
 stripe events resend evt_xxx --webhook-endpoint=we_xxx
 ```
+
+## Containerized Execution (Docker + Compose)
+
+### Build image
+```bash
+docker build -t stripe-automation:latest .
+```
+
+### Run deterministic unit test suite (recommended first gate)
+```bash
+docker compose run --rm qa-unit
+```
+
+### Run full API/Webhook/UI suite (requires Stripe secrets)
+```bash
+docker compose run --rm qa-api-webhook
+```
+
+### Run UI against Selenium Grid container
+```bash
+docker compose --profile ui up --build --abort-on-container-exit qa-ui
+```
+
+## QA Architecture Upgrades
+- Added a **container-first workflow** with reusable image layers and suite-based execution.
+- Added **remote Selenium support** via `SELENIUM_REMOTE_URL` for scalable UI runs in CI/CD.
+- Added a **unit-quality gate** (`testng-unit.xml`) to validate framework internals before expensive integration tests.
+- Added **10+ focused unit-level assertions** across config resolution, webhook signature integrity, duplicate event handling, JSON data loading, and correlation ID lifecycle.
 
 ## Coverage
 - Payment intent create/confirm/success/failure
