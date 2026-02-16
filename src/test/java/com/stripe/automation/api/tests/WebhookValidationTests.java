@@ -20,6 +20,7 @@ public class WebhookValidationTests {
 
     @BeforeClass
     public void startServer() throws IOException {
+        System.setProperty("stripe.webhook.secret", "whsec_unit_test_secret");
         port = findFreePort();
         server.start(port);
     }
@@ -27,6 +28,7 @@ public class WebhookValidationTests {
     @AfterClass
     public void stopServer() {
         server.stop();
+        System.clearProperty("stripe.webhook.secret");
     }
 
     @Test(groups = {"webhook", "smoke"})
