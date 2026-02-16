@@ -63,6 +63,11 @@ public final class WebDriverFactory {
         }
     }
 
+
+    public static WebDriver getExistingDriver() {
+        return DRIVER.get();
+    }
+
     public static void quitDriver() {
         if (DRIVER.get() != null) {
             DRIVER.get().quit();

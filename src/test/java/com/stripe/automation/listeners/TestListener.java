@@ -14,13 +14,19 @@ import java.nio.file.Files;
 public class TestListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
-        WebDriver driver = WebDriverFactory.getDriver();
-        if (driver != null) {
-            try {
-                var shot = ScreenshotUtils.capture(driver, result.getMethod().getMethodName());
-                Allure.addAttachment("failure-screenshot", Files.newInputStream(shot));
-            } catch (IOException | RuntimeException ignored) {
+        WebDriver driver = WebDriverFactory.getExistingDriver();
+        if (driver == null) {
+            return;
+        }
+
+        try {
+            var shot = ScreenshotUtils.capture(driver, result.getMethod().getMethodName());
+            if (Allure.getLifecycle().getCurrentTestCase().isPresent()) {
+                try (var stream = Files.newInputStream(shot)) {
+                    Allure.addAttachment("failure-screenshot", stream);
+                }
             }
+        } catch (IOException | RuntimeException ignored) {
         }
     }
 

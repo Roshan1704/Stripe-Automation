@@ -185,9 +185,20 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
 - UI: login, payments validation, search, refund status, filter & pagination
 
 ## Reporting
-- Allure results: `target/allure-results`
-- Allure report: `mvn allure:report`
-- Failure screenshots: `target/screenshots`
+- Allure raw results: `target/allure-results`
+- Generate report files: `mvn allure:report`
+- Open report correctly (recommended): `mvn allure:serve`
+- If you open generated HTML manually, serve it through HTTP instead of `file://`:
+  ```bash
+  cd target/site/allure-maven-plugin
+  python -m http.server 8080
+  ```
+  Then open `http://localhost:8080`.
+- Failure screenshots: `target/screenshots` (saved when a UI test fails and a WebDriver session exists).
+
+### Allure Troubleshooting
+- If report shows only **Loading...**, you are likely opening `index.html` via `file://` protocol. Use `mvn allure:serve` or a local HTTP server.
+- Ensure at least one test run produced files under `target/allure-results` before running `mvn allure:report`.
 
 ## CI/CD
 GitHub Actions workflow builds, runs API/Webhook/UI, generates Allure, and archives artifacts.
