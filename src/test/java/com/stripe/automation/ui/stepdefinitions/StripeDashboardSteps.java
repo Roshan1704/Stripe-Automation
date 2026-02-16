@@ -9,6 +9,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
+import org.testng.SkipException;
 
 public class StripeDashboardSteps {
     private final LoginPage loginPage = new LoginPage(WebDriverFactory.getDriver());
@@ -16,8 +17,16 @@ public class StripeDashboardSteps {
 
     @Given("the user is logged into Stripe dashboard")
     public void userLogin() {
-        loginPage.open(ConfigManager.get("stripe.dashboard.url"));
-        loginPage.login(ConfigManager.get("stripe.dashboard.email"), ConfigManager.get("stripe.dashboard.password"));
+        String url = ConfigManager.get("stripe.dashboard.url");
+        String email = ConfigManager.get("stripe.dashboard.email");
+        String password = ConfigManager.get("stripe.dashboard.password");
+
+        if (url == null || url.isBlank() || email == null || email.isBlank() || password == null || password.isBlank()) {
+            throw new SkipException("Skipping UI scenario: Stripe dashboard credentials are not configured");
+        }
+
+        loginPage.open(url);
+        loginPage.login(email, password);
     }
 
     @When("the user opens payments page")

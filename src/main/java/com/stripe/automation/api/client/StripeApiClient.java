@@ -3,6 +3,7 @@ package com.stripe.automation.api.client;
 import com.stripe.automation.api.models.PaymentIntentRequest;
 import com.stripe.automation.api.models.RefundRequest;
 import com.stripe.automation.api.spec.ApiSpecifications;
+import com.stripe.automation.api.validation.StripeRequestValidator;
 import io.restassured.response.Response;
 
 import java.util.Map;
@@ -12,6 +13,7 @@ import static io.restassured.RestAssured.given;
 public class StripeApiClient {
 
     public Response createPaymentIntent(PaymentIntentRequest request, String idempotencyKey) {
+        StripeRequestValidator.validatePaymentIntent(request);
         return given()
                 .spec(ApiSpecifications.stripeRequestSpec())
                 .header("Idempotency-Key", idempotencyKey)
@@ -29,6 +31,7 @@ public class StripeApiClient {
     }
 
     public Response createRefund(RefundRequest request) {
+        StripeRequestValidator.validateRefund(request);
         var req = given()
                 .spec(ApiSpecifications.stripeRequestSpec())
                 .formParam("payment_intent", request.payment_intent());
@@ -39,6 +42,7 @@ public class StripeApiClient {
     }
 
     public Response createRefundWithHeaders(RefundRequest request, Map<String, String> headers) {
+        StripeRequestValidator.validateRefund(request);
         var req = given().spec(ApiSpecifications.stripeRequestSpec()).headers(headers)
                 .formParam("payment_intent", request.payment_intent());
         if (request.amount() != null) {

@@ -33,16 +33,21 @@ public class WebhookReceiverServer {
     }
 
     private void handleWebhook(HttpExchange exchange) throws IOException {
-        String payload = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        String signature = exchange.getRequestHeaders().getFirst("Stripe-Signature");
-        int status = verifySignature(payload, signature) ? 200 : 400;
+        int status = 500;
+        try {
+            String payload = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            String signature = exchange.getRequestHeaders().getFirst("Stripe-Signature");
+            status = verifySignature(payload, signature) ? 200 : 400;
 
-        if (status == 200) {
-            JsonNode node = objectMapper.readTree(payload);
-            String eventId = node.path("id").asText();
-            if (!eventIds.add(eventId)) {
-                status = 208;
+            if (status == 200) {
+                JsonNode node = objectMapper.readTree(payload);
+                String eventId = node.path("id").asText();
+                if (!eventIds.add(eventId)) {
+                    status = 208;
+                }
             }
+        } catch (Exception ignored) {
+            status = 500;
         }
 
         exchange.sendResponseHeaders(status, 0);
@@ -54,8 +59,14 @@ public class WebhookReceiverServer {
         if (stripeSigHeader == null || !stripeSigHeader.contains("v1=")) {
             return false;
         }
+
+        String secret = ConfigManager.get("stripe.webhook.secret");
+        if (secret == null || secret.isBlank()) {
+            return false;
+        }
+
         String actual = stripeSigHeader.substring(stripeSigHeader.indexOf("v1=") + 3);
-        String expected = hmacSha256(ConfigManager.get("stripe.webhook.secret"), payload);
+        String expected = hmacSha256(secret, payload);
         return MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8), actual.getBytes(StandardCharsets.UTF_8));
     }
 
