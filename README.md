@@ -213,7 +213,7 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
    ```bash
    jar -cf target/site/full-allure-report.zip -C target/site/allure-maven-plugin .
    ```
-3. Send email with portable attachment using Java class:
+3. Send email with portable attachment using Java class (auto-generates portable report if missing):
    ```bash
    export SMTP_HOST=smtp.yourdomain.com
    export SMTP_PORT=587
@@ -247,6 +247,7 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
      -DREPORT_FROM=automation@yourdomain.com -DREPORT_TO=qa-team@yourdomain.com
    ```
 
+- `send-report-email` now auto-generates `portable-index.html` from `target/allure-results` if it does not exist yet.
 - Failure screenshots: `target/screenshots` (saved when a UI test fails and an active WebDriver session exists).
 
 ### Allure Troubleshooting

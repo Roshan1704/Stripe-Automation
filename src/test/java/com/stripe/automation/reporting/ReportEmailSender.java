@@ -30,9 +30,7 @@ public final class ReportEmailSender {
         String subject = configOrDefault("REPORT_SUBJECT", "Stripe Automation Execution Report");
 
         Path portableReport = Path.of(configOrDefault("PORTABLE_REPORT_PATH", "target/site/allure-maven-plugin/portable-index.html"));
-        if (!portableReport.toFile().exists()) {
-            throw new IllegalStateException("Portable report not found: " + portableReport);
-        }
+        ensurePortableReportExists(portableReport);
 
         boolean attachAllureZip = Boolean.parseBoolean(configOrDefault("ATTACH_ALLURE_ZIP", "true"));
         Path allureZip = Path.of(configOrDefault("ALLURE_ZIP_PATH", "target/site/full-allure-report.zip"));
@@ -83,6 +81,28 @@ public final class ReportEmailSender {
         message.setContent(multipart);
         Transport.send(message);
         System.out.println("Report email sent successfully");
+    }
+
+    private static void ensurePortableReportExists(Path portableReport) throws Exception {
+        if (portableReport.toFile().exists()) {
+            return;
+        }
+
+        System.out.println("Portable report not found at " + portableReport + ". Attempting to generate it now...");
+        if (System.getProperty("PORTABLE_REPORT_PATH") == null) {
+            System.setProperty("PORTABLE_REPORT_PATH", portableReport.toString());
+        }
+        if (System.getProperty("PATCH_ALLURE_INDEX") == null) {
+            System.setProperty("PATCH_ALLURE_INDEX", "true");
+        }
+        PortableReportGenerator.main(new String[0]);
+
+        if (!portableReport.toFile().exists()) {
+            throw new IllegalStateException(
+                    "Portable report not found and auto-generation failed: " + portableReport
+                            + " (run mvn allure:report, then exec:java@generate-portable-report)"
+            );
+        }
     }
 
     private static String required(String key) {

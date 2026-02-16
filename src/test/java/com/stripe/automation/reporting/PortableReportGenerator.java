@@ -22,9 +22,9 @@ public final class PortableReportGenerator {
     }
 
     public static void main(String[] args) throws Exception {
-        Path resultsDir = Path.of(System.getenv().getOrDefault("ALLURE_RESULTS_PATH", "target/allure-results"));
-        Path output = Path.of(System.getenv().getOrDefault("PORTABLE_REPORT_PATH", "target/site/allure-maven-plugin/portable-index.html"));
-        boolean patchIndex = Boolean.parseBoolean(System.getenv().getOrDefault("PATCH_ALLURE_INDEX", "true"));
+        Path resultsDir = Path.of(configOrDefault("ALLURE_RESULTS_PATH", "target/allure-results"));
+        Path output = Path.of(configOrDefault("PORTABLE_REPORT_PATH", "target/site/allure-maven-plugin/portable-index.html"));
+        boolean patchIndex = Boolean.parseBoolean(configOrDefault("PATCH_ALLURE_INDEX", "true"));
 
         Files.createDirectories(output.getParent());
         List<Row> rows = loadRows(resultsDir);
@@ -36,6 +36,24 @@ public final class PortableReportGenerator {
         }
 
         System.out.println("Portable report generated: " + output);
+    }
+
+
+    private static String configOrDefault(String key, String fallback) {
+        String value = config(key);
+        return (value == null || value.isBlank()) ? fallback : value;
+    }
+
+    private static String config(String key) {
+        String sysProp = System.getProperty(key);
+        if (sysProp != null && !sysProp.isBlank()) {
+            return sysProp;
+        }
+        String env = System.getenv(key);
+        if (env != null && !env.isBlank()) {
+            return env;
+        }
+        return null;
     }
 
     private static List<Row> loadRows(Path resultsDir) throws IOException {
