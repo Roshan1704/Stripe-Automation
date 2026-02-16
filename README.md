@@ -187,7 +187,7 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
 ## Reporting
 - Allure raw results: `target/allure-results`
 - Generate full Allure report: `mvn allure:report`
-- Generate portable offline report (opens from `file://` and email attachment):
+- Generate stakeholder-friendly one-file HTML report (email attachment friendly, opens from `file://`):
   ```bash
   mvn -DskipTests test-compile exec:java@generate-portable-report
   ```
@@ -196,9 +196,8 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
 1. **Interactive Allure (best UX)**
    - `mvn allure:serve`
 2. **Direct-click mode (`index.html`)**
-   - After running portable generator, open:
-     - `target/site/allure-maven-plugin/index.html`
-   - This launcher auto-redirects to portable report when opened from `file://`.
+   - Open `target/site/allure-maven-plugin/index.html`
+   - It auto-opens `portable-index.html` (stakeholder summary) for `file://` users.
 
 ### Email report flow
 - `mvn send-report-email` is **not** a valid Maven lifecycle phase. Use `exec:java@send-report-email` (configured in `pom.xml`).
@@ -248,6 +247,7 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
    ```
 
 - `send-report-email` now auto-generates `portable-index.html` from `target/allure-results` if it does not exist yet.
+- `portable-index.html` is intentionally summarized for stakeholders (overall result, pass rate, suite KPIs, top failures) in a single page.
 - Failure screenshots: `target/screenshots` (saved when a UI test fails and an active WebDriver session exists).
 
 ### Allure Troubleshooting
