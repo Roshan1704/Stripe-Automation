@@ -234,6 +234,7 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
 - Failure screenshots: `target/screenshots` (saved when a UI test fails and an active WebDriver session exists).
 
 ### Allure Troubleshooting
+- If IDE still shows old `.py` files in tabs, those are stale local editor buffers/workspace cache; this repository no longer tracks Python files. Refresh project and close stale tabs.
 - If report shows only **Loading...**, it is usually opened with `file://`. Use `mvn allure:serve` **or** run the Java portable generator and open `index.html` again.
 - Ensure `target/allure-results` has files before generating report.
 

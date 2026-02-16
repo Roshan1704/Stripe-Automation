@@ -75,20 +75,20 @@ public final class PortableReportGenerator {
         }
 
         rows.sort(Comparator.comparingInt(r -> {
-            int i = STATUS_ORDER.indexOf(r.status());
+            int i = STATUS_ORDER.indexOf(r.status);
             return i >= 0 ? i : 99;
-        }).thenComparing(Row::name));
+        }).thenComparing(r -> r.name));
 
         return rows;
     }
 
     private static String buildHtml(List<Row> rows, String generatedAt) {
         Map<String, Long> totals = Map.of(
-                "passed", rows.stream().filter(r -> "passed".equals(r.status())).count(),
-                "failed", rows.stream().filter(r -> "failed".equals(r.status())).count(),
-                "broken", rows.stream().filter(r -> "broken".equals(r.status())).count(),
-                "skipped", rows.stream().filter(r -> "skipped".equals(r.status())).count(),
-                "unknown", rows.stream().filter(r -> !STATUS_ORDER.contains(r.status()) || "unknown".equals(r.status())).count()
+                "passed", rows.stream().filter(r -> "passed".equals(r.status)).count(),
+                "failed", rows.stream().filter(r -> "failed".equals(r.status)).count(),
+                "broken", rows.stream().filter(r -> "broken".equals(r.status)).count(),
+                "skipped", rows.stream().filter(r -> "skipped".equals(r.status)).count(),
+                "unknown", rows.stream().filter(r -> !STATUS_ORDER.contains(r.status) || "unknown".equals(r.status)).count()
         );
 
         StringBuilder tableRows = new StringBuilder();
@@ -97,11 +97,11 @@ public final class PortableReportGenerator {
         } else {
             for (Row r : rows) {
                 tableRows.append("<tr>")
-                        .append("<td>").append(escape(r.name())).append("</td>")
-                        .append("<td><span class='badge ").append(escape(r.status())).append("'>").append(escape(r.status())).append("</span></td>")
-                        .append("<td>").append(escape(r.suite())).append("</td>")
-                        .append("<td>").append(escape(r.pkg())).append("</td>")
-                        .append("<td>").append(r.durationMs() == null ? "-" : r.durationMs() + " ms").append("</td>")
+                        .append("<td>").append(escape(r.name)).append("</td>")
+                        .append("<td><span class='badge ").append(escape(r.status)).append("'>").append(escape(r.status)).append("</span></td>")
+                        .append("<td>").append(escape(r.suite)).append("</td>")
+                        .append("<td>").append(escape(r.pkg)).append("</td>")
+                        .append("<td>").append(r.durationMs == null ? "-" : r.durationMs + " ms").append("</td>")
                         .append("</tr>");
             }
         }
@@ -191,6 +191,19 @@ public final class PortableReportGenerator {
         return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    private record Row(String name, String status, String suite, String pkg, Long durationMs) {
+    private static final class Row {
+        private final String name;
+        private final String status;
+        private final String suite;
+        private final String pkg;
+        private final Long durationMs;
+
+        private Row(String name, String status, String suite, String pkg, Long durationMs) {
+            this.name = name;
+            this.status = status;
+            this.suite = suite;
+            this.pkg = pkg;
+            this.durationMs = durationMs;
+        }
     }
 }
