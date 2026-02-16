@@ -226,12 +226,34 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
    mvn -DskipTests test-compile exec:java@send-report-email
    ```
 
+   On Windows `cmd.exe`, use:
+   ```cmd
+   set SMTP_HOST=smtp.yourdomain.com
+   set SMTP_PORT=587
+   set SMTP_USER=automation@yourdomain.com
+   set SMTP_PASS=your-password-or-app-token
+   set REPORT_FROM=automation@yourdomain.com
+   set REPORT_TO=qa-team@yourdomain.com
+   set ATTACH_ALLURE_ZIP=true
+
+   mvn -DskipTests test-compile exec:java@send-report-email
+   ```
+
+   You can also pass values as JVM props (useful in IDE/Eclipse launchers):
+   ```bash
+   mvn -DskipTests test-compile exec:java@send-report-email \
+     -DSMTP_HOST=smtp.yourdomain.com -DSMTP_PORT=587 \
+     -DSMTP_USER=automation@yourdomain.com -DSMTP_PASS=your-app-password \
+     -DREPORT_FROM=automation@yourdomain.com -DREPORT_TO=qa-team@yourdomain.com
+   ```
+
 - Failure screenshots: `target/screenshots` (saved when a UI test fails and an active WebDriver session exists).
 
 ### Allure Troubleshooting
 - If IDE still shows old `.py` files in tabs, those are stale local editor buffers/workspace cache; this repository no longer tracks Python files. Refresh project and close stale tabs.
 - If report shows only **Loading...**, it is usually opened with `file://`. Use `mvn allure:serve` **or** run the Java portable generator and open `index.html` again.
 - Ensure `target/allure-results` has files before generating report.
+- If email sender says config is missing, remember Eclipse/cmd may not inherit Git Bash exports; use `set` (cmd) or `-DKEY=value` JVM props.
 
 ## CI/CD
 GitHub Actions workflow builds, runs API/Webhook/UI, generates Allure, and archives artifacts.

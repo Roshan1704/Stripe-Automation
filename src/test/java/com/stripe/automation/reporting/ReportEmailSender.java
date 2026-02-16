@@ -21,21 +21,21 @@ public final class ReportEmailSender {
 
     public static void main(String[] args) throws Exception {
         String smtpHost = required("SMTP_HOST");
-        String smtpPort = System.getenv().getOrDefault("SMTP_PORT", "587");
+        String smtpPort = configOrDefault("SMTP_PORT", "587");
         String smtpUser = required("SMTP_USER");
         String smtpPass = required("SMTP_PASS");
 
-        String from = System.getenv().getOrDefault("REPORT_FROM", smtpUser);
+        String from = configOrDefault("REPORT_FROM", smtpUser);
         String to = required("REPORT_TO");
-        String subject = System.getenv().getOrDefault("REPORT_SUBJECT", "Stripe Automation Execution Report");
+        String subject = configOrDefault("REPORT_SUBJECT", "Stripe Automation Execution Report");
 
-        Path portableReport = Path.of(System.getenv().getOrDefault("PORTABLE_REPORT_PATH", "target/site/allure-maven-plugin/portable-index.html"));
+        Path portableReport = Path.of(configOrDefault("PORTABLE_REPORT_PATH", "target/site/allure-maven-plugin/portable-index.html"));
         if (!portableReport.toFile().exists()) {
             throw new IllegalStateException("Portable report not found: " + portableReport);
         }
 
-        boolean attachAllureZip = Boolean.parseBoolean(System.getenv().getOrDefault("ATTACH_ALLURE_ZIP", "true"));
-        Path allureZip = Path.of(System.getenv().getOrDefault("ALLURE_ZIP_PATH", "target/site/full-allure-report.zip"));
+        boolean attachAllureZip = Boolean.parseBoolean(configOrDefault("ATTACH_ALLURE_ZIP", "true"));
+        Path allureZip = Path.of(configOrDefault("ALLURE_ZIP_PATH", "target/site/full-allure-report.zip"));
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -86,10 +86,30 @@ public final class ReportEmailSender {
     }
 
     private static String required(String key) {
-        String value = System.getenv(key);
+        String value = config(key);
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Required environment variable is missing: " + key);
+            throw new IllegalStateException(
+                    "Required SMTP config missing: " + key
+                            + " (set env var " + key + " or JVM property -D" + key + ")"
+            );
         }
         return value;
+    }
+
+    private static String configOrDefault(String key, String fallback) {
+        String value = config(key);
+        return (value == null || value.isBlank()) ? fallback : value;
+    }
+
+    private static String config(String key) {
+        String sysProp = System.getProperty(key);
+        if (sysProp != null && !sysProp.isBlank()) {
+            return sysProp;
+        }
+        String env = System.getenv(key);
+        if (env != null && !env.isBlank()) {
+            return env;
+        }
+        return null;
     }
 }
