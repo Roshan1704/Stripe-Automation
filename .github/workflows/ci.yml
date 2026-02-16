@@ -1,5 +1,4 @@
 name: Stripe Automation CI
-
 on:
   push:
     branches: ["main", "master", "**"]
