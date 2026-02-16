@@ -114,6 +114,18 @@ export STRIPE_DASHBOARD_PASSWORD=your-password
 export STRIPE_WEBHOOK_SECRET=whsec_xxx
 ```
 
+### Execution Preconditions (important)
+- API integration tests require `STRIPE_SECRET_KEY`.
+- UI tests require `STRIPE_DASHBOARD_EMAIL` and `STRIPE_DASHBOARD_PASSWORD`.
+- When these are not configured, tests are skipped with an explicit message instead of failing with null-input Selenium/API errors.
+
+### Cucumber UI execution control
+- Default runner excludes `@ui` scenarios to keep `mvn clean test -Ptest` stable in environments without dashboard credentials.
+- To run UI scenarios explicitly:
+```bash
+mvn test -Dcucumber.filter.tags="@ui and (@smoke or @regression)"
+```
+
 ## Run tests
 ```bash
 mvn clean test -Ptest

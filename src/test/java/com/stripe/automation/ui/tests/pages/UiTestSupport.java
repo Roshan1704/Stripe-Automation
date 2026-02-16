@@ -2,13 +2,13 @@ package com.stripe.automation.ui.tests.pages;
 
 import com.stripe.automation.base.BaseUiTest;
 import com.stripe.automation.config.ConfigManager;
+import com.stripe.automation.support.TestPrerequisites;
 import com.stripe.automation.ui.pages.CustomersPage;
 import com.stripe.automation.ui.pages.DashboardHomePage;
 import com.stripe.automation.ui.pages.DisputesPage;
 import com.stripe.automation.ui.pages.LoginPage;
 import com.stripe.automation.ui.pages.PaymentsPage;
 import com.stripe.automation.ui.pages.RefundsPage;
-import org.testng.SkipException;
 import org.testng.annotations.BeforeMethod;
 
 public abstract class UiTestSupport extends BaseUiTest {
@@ -34,10 +34,7 @@ public abstract class UiTestSupport extends BaseUiTest {
         String password = ConfigManager.get("stripe.dashboard.password");
         String url = ConfigManager.get("stripe.dashboard.url");
 
-        if (url == null || url.isBlank() || email == null || email.isBlank() || password == null || password.isBlank()) {
-            throw new SkipException("UI credentials/url are not configured; skipping UI tests");
-        }
-
+        TestPrerequisites.requireUiCredentials();
         loginPage.open(url);
         loginPage.login(email, password);
     }
