@@ -189,9 +189,7 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
 - Generate full Allure report: `mvn allure:report`
 - Generate portable offline report (opens from `file://` and email attachment):
   ```bash
-  mvn -DskipTests test-compile exec:java \
-    -Dexec.classpathScope=test \
-    -Dexec.mainClass=com.stripe.automation.reporting.PortableReportGenerator
+  mvn -DskipTests test-compile exec:java@generate-portable-report
   ```
 
 ### Open reports locally
@@ -203,14 +201,13 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
    - This launcher auto-redirects to portable report when opened from `file://`.
 
 ### Email report flow
+- `mvn send-report-email` is **not** a valid Maven lifecycle phase. Use `exec:java@send-report-email` (configured in `pom.xml`).
 - Email delivery is implemented in Java (`ReportEmailSender`) to keep architecture consistent and avoid Python runtime dependency for email flow.
 1. Run tests and generate reports:
    ```bash
    mvn clean test -Ptest
    mvn allure:report
-   mvn -DskipTests test-compile exec:java \
-    -Dexec.classpathScope=test \
-    -Dexec.mainClass=com.stripe.automation.reporting.PortableReportGenerator
+   mvn -DskipTests test-compile exec:java@generate-portable-report
    ```
 2. Create zip for full interactive Allure report (optional):
    ```bash
@@ -226,9 +223,7 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
    export REPORT_TO=qa-team@yourdomain.com
    export ATTACH_ALLURE_ZIP=true
 
-   mvn -DskipTests test-compile exec:java \
-     -Dexec.classpathScope=test \
-     -Dexec.mainClass=com.stripe.automation.reporting.ReportEmailSender
+   mvn -DskipTests test-compile exec:java@send-report-email
    ```
 
 - Failure screenshots: `target/screenshots` (saved when a UI test fails and an active WebDriver session exists).
