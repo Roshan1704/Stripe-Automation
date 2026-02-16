@@ -82,7 +82,7 @@ stripe-automation-framework/
 - `drivers/`: Browser lifecycle and cross-browser driver configuration.
 - `utils/`: Waits, screenshots, test data loading, correlation IDs.
 - `api/`: API models, request specification builders, and Stripe API client.
-- `ui/pages/`: POM classes for Stripe dashboard interactions.
+- `ui/pages/`: POM classes for Stripe dashboard interactions (Login, DashboardHome, Payments, Customers, Refunds, Disputes).
 - `ui/stepdefinitions/`: Cucumber glue code mapping features to page actions.
 - `runners/`: TestNG+Cucumber runner classes.
 - `hooks/`: Cucumber hooks for setup/teardown.
@@ -150,7 +150,16 @@ docker compose run --rm qa-api-webhook
 docker compose --profile ui up --build --abort-on-container-exit qa-ui
 ```
 
+### UI Page Objects to Test Classes Mapping
+- `LoginPage` → `LoginPageTestCases`
+- `PaymentsPage` → `PaymentsPageTestCases`
+- `CustomersPage` → `CustomersPageTestCases`
+- `RefundsPage` → `RefundsPageTestCases`
+- `DisputesPage` → `DisputesPageTestCases`
+
 ## QA Architecture Upgrades
+- Added a **300+ API validation matrix** test (`StripeRequestValidationMatrixTests`) through TestNG DataProvider permutations for production-style negative/positive pre-flight validation.
+- Added explicit **UI testcase class** (`StripeDashboardUiTestCases`) that exercises Login + Dashboard modules using page objects.
 - Added a **container-first workflow** with reusable image layers and suite-based execution.
 - Added **remote Selenium support** via `SELENIUM_REMOTE_URL` for scalable UI runs in CI/CD.
 - Added a **unit-quality gate** (`testng-unit.xml`) to validate framework internals before expensive integration tests.
