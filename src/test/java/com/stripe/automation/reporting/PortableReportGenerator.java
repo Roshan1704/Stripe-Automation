@@ -96,10 +96,10 @@ public final class PortableReportGenerator {
             });
         }
 
-        rows.sort(Comparator.comparingInt(r -> {
+        rows.sort(Comparator.comparingInt((Row r) -> {
             int i = STATUS_ORDER.indexOf(r.status);
             return i >= 0 ? i : 99;
-        }).thenComparing(r -> r.name));
+        }).thenComparing((Row r) -> r.name));
 
         return rows;
     }
