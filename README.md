@@ -82,13 +82,27 @@ stripe-automation-framework/
 - `drivers/`: Browser lifecycle and cross-browser driver configuration.
 - `utils/`: Waits, screenshots, test data loading, correlation IDs.
 - `api/`: API models, request specification builders, and Stripe API client.
-- `ui/pages/`: POM classes for Stripe dashboard interactions.
+- `ui/pages/`: POM classes for Stripe dashboard interactions (Login, DashboardHome, Payments, Customers, Refunds, Disputes).
 - `ui/stepdefinitions/`: Cucumber glue code mapping features to page actions.
 - `runners/`: TestNG+Cucumber runner classes.
 - `hooks/`: Cucumber hooks for setup/teardown.
 - `config/`: Environment-specific execution properties.
 - `testdata/`: Input datasets for data-driven testing.
 - `schemas/`: JSON schemas for response validation.
+
+## Eclipse / STS Import (Fix for Maven nesting error)
+If Eclipse shows errors like:
+- `Cannot nest .../src/main/resources inside .../src`
+
+the project was previously imported as a plain Java project. Use Maven import instead:
+
+1. Delete old Eclipse metadata (`.project`, `.classpath`, `.settings`) if present.
+2. In Eclipse: **File → Import → Maven → Existing Maven Projects**.
+3. Select repository root (the folder containing `pom.xml`) and finish import.
+4. Run **Right click project → Maven → Update Project**.
+5. Ensure Project SDK/JRE is Java 17.
+
+This repository no longer tracks legacy Eclipse Java-project metadata, so m2e can generate the correct Maven source folders (`src/main/java`, `src/test/java`, `src/main/resources`, `src/test/resources`).
 
 ## Setup
 1. Java 17+, Maven 3.9+
@@ -98,6 +112,18 @@ export STRIPE_SECRET_KEY=sk_test_xxx
 export STRIPE_DASHBOARD_EMAIL=your-email
 export STRIPE_DASHBOARD_PASSWORD=your-password
 export STRIPE_WEBHOOK_SECRET=whsec_xxx
+```
+
+### Execution Preconditions (important)
+- API integration tests require `STRIPE_SECRET_KEY`.
+- UI tests require `STRIPE_DASHBOARD_EMAIL` and `STRIPE_DASHBOARD_PASSWORD`.
+- When these are not configured, tests are skipped with an explicit message instead of failing with null-input Selenium/API errors.
+
+### Cucumber UI execution control
+- Default runner excludes `@ui` scenarios to keep `mvn clean test -Ptest` stable in environments without dashboard credentials.
+- To run UI scenarios explicitly:
+```bash
+mvn test -Dcucumber.filter.tags="@ui and (@smoke or @regression)"
 ```
 
 ## Run tests
@@ -114,6 +140,43 @@ stripe trigger payment_intent.succeeded
 stripe events resend evt_xxx --webhook-endpoint=we_xxx
 ```
 
+## Containerized Execution (Docker + Compose)
+
+### Build image
+```bash
+docker build -t stripe-automation:latest .
+```
+
+### Run deterministic unit test suite (recommended first gate)
+```bash
+docker compose run --rm qa-unit
+```
+
+### Run full API/Webhook/UI suite (requires Stripe secrets)
+```bash
+docker compose run --rm qa-api-webhook
+```
+
+### Run UI against Selenium Grid container
+```bash
+docker compose --profile ui up --build --abort-on-container-exit qa-ui
+```
+
+### UI Page Objects to Test Classes Mapping
+- `LoginPage` → `LoginPageTestCases`
+- `PaymentsPage` → `PaymentsPageTestCases`
+- `CustomersPage` → `CustomersPageTestCases`
+- `RefundsPage` → `RefundsPageTestCases`
+- `DisputesPage` → `DisputesPageTestCases`
+
+## QA Architecture Upgrades
+- Added a **300+ API validation matrix** test (`StripeRequestValidationMatrixTests`) through TestNG DataProvider permutations for production-style negative/positive pre-flight validation.
+- Added explicit **UI testcase class** (`StripeDashboardUiTestCases`) that exercises Login + Dashboard modules using page objects.
+- Added a **container-first workflow** with reusable image layers and suite-based execution.
+- Added **remote Selenium support** via `SELENIUM_REMOTE_URL` for scalable UI runs in CI/CD.
+- Added a **unit-quality gate** (`testng-unit.xml`) to validate framework internals before expensive integration tests.
+- Added **10+ focused unit-level assertions** across config resolution, webhook signature integrity, duplicate event handling, JSON data loading, and correlation ID lifecycle.
+
 ## Coverage
 - Payment intent create/confirm/success/failure
 - Full + partial + duplicate + over-refund checks
@@ -122,9 +185,20 @@ stripe events resend evt_xxx --webhook-endpoint=we_xxx
 - UI: login, payments validation, search, refund status, filter & pagination
 
 ## Reporting
-- Allure results: `target/allure-results`
-- Allure report: `mvn allure:report`
-- Failure screenshots: `target/screenshots`
+- Allure raw results: `target/allure-results`
+- Generate report files: `mvn allure:report`
+- Open report correctly (recommended): `mvn allure:serve`
+- If you open generated HTML manually, serve it through HTTP instead of `file://`:
+  ```bash
+  cd target/site/allure-maven-plugin
+  python -m http.server 8080
+  ```
+  Then open `http://localhost:8080`.
+- Failure screenshots: `target/screenshots` (saved when a UI test fails and a WebDriver session exists).
+
+### Allure Troubleshooting
+- If report shows only **Loading...**, you are likely opening `index.html` via `file://` protocol. Use `mvn allure:serve` or a local HTTP server.
+- Ensure at least one test run produced files under `target/allure-results` before running `mvn allure:report`.
 
 ## CI/CD
 GitHub Actions workflow builds, runs API/Webhook/UI, generates Allure, and archives artifacts.
