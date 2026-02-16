@@ -186,19 +186,44 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
 
 ## Reporting
 - Allure raw results: `target/allure-results`
-- Generate report files: `mvn allure:report`
-- Open report correctly (recommended): `mvn allure:serve`
-- If you open generated HTML manually, serve it through HTTP instead of `file://`:
+- Generate full Allure report: `mvn allure:report`
+- Generate portable offline report (opens from `file://` and email attachment):
   ```bash
-  cd target/site/allure-maven-plugin
-  python -m http.server 8080
+  python scripts/generate_portable_report.py --patch-index
   ```
-  Then open `http://localhost:8080`.
-- Failure screenshots: `target/screenshots` (saved when a UI test fails and a WebDriver session exists).
+
+### Open reports locally
+1. **Interactive Allure (best UX)**
+   - `mvn allure:serve`
+2. **Direct-click mode (`index.html`)**
+   - After running portable generator, open:
+     - `target/site/allure-maven-plugin/index.html`
+   - This launcher auto-redirects to portable report when opened from `file://`.
+
+### Email report flow
+1. Run tests and generate reports:
+   ```bash
+   mvn clean test -Ptest
+   mvn allure:report
+   python scripts/generate_portable_report.py --patch-index
+   ```
+2. Send email with portable attachment:
+   ```bash
+   export SMTP_HOST=smtp.yourdomain.com
+   export SMTP_PORT=587
+   export SMTP_USER=automation@yourdomain.com
+   export SMTP_PASS=your-password-or-app-token
+   export REPORT_FROM=automation@yourdomain.com
+   export REPORT_TO=qa-team@yourdomain.com
+
+   python scripts/send_report_email.py --attach-allure-zip
+   ```
+
+- Failure screenshots: `target/screenshots` (saved when a UI test fails and an active WebDriver session exists).
 
 ### Allure Troubleshooting
-- If report shows only **Loading...**, you are likely opening `index.html` via `file://` protocol. Use `mvn allure:serve` or a local HTTP server.
-- Ensure at least one test run produced files under `target/allure-results` before running `mvn allure:report`.
+- If report shows only **Loading...**, it is usually opened with `file://`. Use `mvn allure:serve` **or** run `python scripts/generate_portable_report.py --patch-index` and open `index.html` again.
+- Ensure `target/allure-results` has files before generating report.
 
 ## CI/CD
 GitHub Actions workflow builds, runs API/Webhook/UI, generates Allure, and archives artifacts.
