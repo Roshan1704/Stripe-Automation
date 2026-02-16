@@ -16,6 +16,29 @@
         </classes>
     </test>
 
+
+    <test name="API-Validation-Matrix-300Plus">
+        <classes>
+            <class name="com.stripe.automation.api.tests.StripeRequestValidationMatrixTests"/>
+        </classes>
+    </test>
+
+
+    <test name="UI-Page-TestCases">
+        <classes>
+            <class name="com.stripe.automation.ui.tests.pages.LoginPageTestCases"/>
+            <class name="com.stripe.automation.ui.tests.pages.PaymentsPageTestCases"/>
+            <class name="com.stripe.automation.ui.tests.pages.CustomersPageTestCases"/>
+            <class name="com.stripe.automation.ui.tests.pages.RefundsPageTestCases"/>
+            <class name="com.stripe.automation.ui.tests.pages.DisputesPageTestCases"/>
+        </classes>
+    </test>
+
+    <test name="UI-POM-TestCases">
+        <classes>
+            <class name="com.stripe.automation.ui.tests.StripeDashboardUiTestCases"/>
+        </classes>
+    </test>
     <test name="UI-BDD-Tests">
         <classes>
             <class name="com.stripe.automation.runners.CucumberUiTestRunner"/>
