@@ -150,6 +150,13 @@ docker compose run --rm qa-api-webhook
 docker compose --profile ui up --build --abort-on-container-exit qa-ui
 ```
 
+### UI Page Objects to Test Classes Mapping
+- `LoginPage` → `LoginPageTestCases`
+- `PaymentsPage` → `PaymentsPageTestCases`
+- `CustomersPage` → `CustomersPageTestCases`
+- `RefundsPage` → `RefundsPageTestCases`
+- `DisputesPage` → `DisputesPageTestCases`
+
 ## QA Architecture Upgrades
 - Added a **300+ API validation matrix** test (`StripeRequestValidationMatrixTests`) through TestNG DataProvider permutations for production-style negative/positive pre-flight validation.
 - Added explicit **UI testcase class** (`StripeDashboardUiTestCases`) that exercises Login + Dashboard modules using page objects.
