@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  qa-unit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stripe-automation:latest
+    environment:
+      SUITE_XML: testng-unit.xml
+
+  qa-api-webhook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stripe-automation:latest
+    environment:
+      SUITE_XML: testng.xml
+      ENV: test
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_DASHBOARD_EMAIL: ${STRIPE_DASHBOARD_EMAIL:-}
+      STRIPE_DASHBOARD_PASSWORD: ${STRIPE_DASHBOARD_PASSWORD:-}
+
+  qa-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stripe-automation:latest
+    depends_on:
+      - selenium
+    environment:
+      SUITE_XML: testng.xml
+      ENV: test
+      SELENIUM_REMOTE_URL: http://selenium:4444/wd/hub
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_DASHBOARD_EMAIL: ${STRIPE_DASHBOARD_EMAIL:-}
+      STRIPE_DASHBOARD_PASSWORD: ${STRIPE_DASHBOARD_PASSWORD:-}
+    profiles: ["ui"]
+
+  selenium:
+    image: selenium/standalone-chrome:127.0
+    shm_size: 2gb
+    ports:
+      - "4444:4444"
+    profiles: ["ui"]

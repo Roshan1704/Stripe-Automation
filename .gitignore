@@ -1,0 +1,18 @@
+# Build
+target/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# IDE
+.idea/
+.vscode/
+
+# Runtime / reports
+allure-results/
+allure-report/
+
+# OS
+.DS_Store
