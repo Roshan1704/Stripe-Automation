@@ -19,7 +19,7 @@ public class TestListener implements ITestListener {
             try {
                 var shot = ScreenshotUtils.capture(driver, result.getMethod().getMethodName());
                 Allure.addAttachment("failure-screenshot", Files.newInputStream(shot));
-            } catch (IOException ignored) {
+            } catch (IOException | RuntimeException ignored) {
             }
         }
     }
