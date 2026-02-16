@@ -5,6 +5,7 @@ import com.stripe.automation.api.models.PaymentIntentRequest;
 import com.stripe.automation.api.models.RefundRequest;
 import com.stripe.automation.config.ConfigManager;
 import com.stripe.automation.listeners.RetryAnalyzer;
+import com.stripe.automation.support.TestPrerequisites;
 import io.restassured.RestAssured;
 import io.restassured.module.jsv.JsonSchemaValidator;
 import io.restassured.response.Response;
@@ -25,6 +26,7 @@ public class StripeApiTests {
     @BeforeClass
     public void setup() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        TestPrerequisites.requireStripeApiCredentials();
     }
 
     @Test(groups = {"smoke", "api"}, retryAnalyzer = RetryAnalyzer.class)

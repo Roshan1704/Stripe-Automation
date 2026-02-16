@@ -13,10 +13,15 @@ public final class ApiSpecifications {
     private ApiSpecifications() {}
 
     public static RequestSpecification stripeRequestSpec() {
+        String secretKey = ConfigManager.get("stripe.secretKey");
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalStateException("stripe.secretKey is not configured. Set STRIPE_SECRET_KEY or stripe.secretKey.");
+        }
+
         return new RequestSpecBuilder()
                 .setBaseUri(ConfigManager.get("stripe.api.baseUrl"))
                 .setContentType(ContentType.URLENC)
-                .addHeader("Authorization", "Bearer " + ConfigManager.get("stripe.secretKey"))
+                .addHeader("Authorization", "Bearer " + secretKey)
                 .addHeader("X-Correlation-Id", CorrelationId.get())
                 .log(LogDetail.ALL)
                 .build();
