@@ -189,7 +189,9 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
 - Generate full Allure report: `mvn allure:report`
 - Generate portable offline report (opens from `file://` and email attachment):
   ```bash
-  python scripts/generate_portable_report.py --patch-index
+  mvn -DskipTests test-compile exec:java \
+    -Dexec.classpathScope=test \
+    -Dexec.mainClass=com.stripe.automation.reporting.PortableReportGenerator
   ```
 
 ### Open reports locally
@@ -201,13 +203,20 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
    - This launcher auto-redirects to portable report when opened from `file://`.
 
 ### Email report flow
+- Email delivery is implemented in Java (`ReportEmailSender`) to keep architecture consistent and avoid Python runtime dependency for email flow.
 1. Run tests and generate reports:
    ```bash
    mvn clean test -Ptest
    mvn allure:report
-   python scripts/generate_portable_report.py --patch-index
+   mvn -DskipTests test-compile exec:java \
+    -Dexec.classpathScope=test \
+    -Dexec.mainClass=com.stripe.automation.reporting.PortableReportGenerator
    ```
-2. Send email with portable attachment:
+2. Create zip for full interactive Allure report (optional):
+   ```bash
+   jar -cf target/site/full-allure-report.zip -C target/site/allure-maven-plugin .
+   ```
+3. Send email with portable attachment using Java class:
    ```bash
    export SMTP_HOST=smtp.yourdomain.com
    export SMTP_PORT=587
@@ -215,14 +224,17 @@ docker compose --profile ui up --build --abort-on-container-exit qa-ui
    export SMTP_PASS=your-password-or-app-token
    export REPORT_FROM=automation@yourdomain.com
    export REPORT_TO=qa-team@yourdomain.com
+   export ATTACH_ALLURE_ZIP=true
 
-   python scripts/send_report_email.py --attach-allure-zip
+   mvn -DskipTests test-compile exec:java \
+     -Dexec.classpathScope=test \
+     -Dexec.mainClass=com.stripe.automation.reporting.ReportEmailSender
    ```
 
 - Failure screenshots: `target/screenshots` (saved when a UI test fails and an active WebDriver session exists).
 
 ### Allure Troubleshooting
-- If report shows only **Loading...**, it is usually opened with `file://`. Use `mvn allure:serve` **or** run `python scripts/generate_portable_report.py --patch-index` and open `index.html` again.
+- If report shows only **Loading...**, it is usually opened with `file://`. Use `mvn allure:serve` **or** run the Java portable generator and open `index.html` again.
 - Ensure `target/allure-results` has files before generating report.
 
 ## CI/CD
